@@ -39,7 +39,7 @@ type videoInfoContainer struct {
 }
 
 // Get will try to download video of provided episode
-func Get(episode eplister.Episode) error {
+func Get(episode eplister.Episode, outDir string) error {
 	doc, err := gqcommon.GetDoc(episode.Url)
 	if err != nil {
 		return err
@@ -100,15 +100,22 @@ func Get(episode eplister.Episode) error {
 		return errors.New("Could not find suitable path to download")
 	}
 
-	folder := path.Join("videos", episode.Series, episode.Season)
+	folder := path.Join(outDir, "videos", episode.Series, episode.Season)
 	file := episode.Episode + ".mp4"
 	fullPath := path.Join(folder, file)
+
+	_, err = os.Stat(fullPath)
+	if !os.IsNotExist(err) {
+		log.Println("File already exists, will not redownload", fullPath)
+		return nil
+	}
+
+	log.Println("Downloading", fullPath)
+
 	os.MkdirAll(folder, 0700)
-	exec.Command("ffmpeg",
+	return exec.Command("ffmpeg",
 		"-i", videoURL,
 		"-c", "copy",
 		"-bsf:a", "aac_adtstoasc",
 		fullPath).Run()
-
-	return nil
 }

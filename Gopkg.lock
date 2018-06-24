@@ -8,6 +8,27 @@
   version = "v1.4.1"
 
 [[projects]]
+  name = "github.com/alecthomas/kingpin"
+  packages = ["."]
+  revision = "947dcec5ba9c011838740e680966fd7087a71d0d"
+  version = "v2.2.6"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/alecthomas/template"
+  packages = [
+    ".",
+    "parse"
+  ]
+  revision = "a0175ee3bccc567396460bf5acd36800cb10c49c"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/alecthomas/units"
+  packages = ["."]
+  revision = "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
+
+[[projects]]
   name = "github.com/andybalholm/cascadia"
   packages = ["."]
   revision = "901648c87902174f774fac311d7f176f8647bdaa"
@@ -25,6 +46,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "871d2081f263c5167444d0ec29f26ae16df6aed70fde14bd2324088d10e73224"
+  inputs-digest = "3637c52e3c20ca7d693fdb92e6cfda9df5a0068a06c6d265754629dbcdc49ef1"
   solver-name = "gps-cdcl"
   solver-version = 1
