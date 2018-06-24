@@ -102,20 +102,28 @@ func Get(episode eplister.Episode, outDir string) error {
 
 	folder := path.Join(outDir, "videos", episode.Series, episode.Season)
 	file := episode.Episode + ".mp4"
+	fileTemp := episode.Episode + ".part.mp4"
 	fullPath := path.Join(folder, file)
+	fullPathTemp := path.Join(folder, fileTemp)
 
 	_, err = os.Stat(fullPath)
 	if !os.IsNotExist(err) {
-		log.Println("File already exists, will not redownload", fullPath)
+		log.Println("Not redownloading", fullPath)
 		return nil
 	}
 
 	log.Println("Downloading", fullPath)
 
 	os.MkdirAll(folder, 0700)
-	return exec.Command("ffmpeg",
+	err = exec.Command("ffmpeg",
 		"-i", videoURL,
 		"-c", "copy",
 		"-bsf:a", "aac_adtstoasc",
-		fullPath).Run()
+		fullPathTemp).Run()
+
+	if err != nil {
+		return err
+	}
+
+	return os.Rename(fullPathTemp, fullPath)
 }

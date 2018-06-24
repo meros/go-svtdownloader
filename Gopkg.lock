@@ -36,6 +36,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/xconstruct/go-pushbullet"
+  packages = ["."]
+  revision = "67759df45fbbd23cbe3d5cdc6df7891c5b663cb8"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = [
     "html",
@@ -46,6 +52,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3637c52e3c20ca7d693fdb92e6cfda9df5a0068a06c6d265754629dbcdc49ef1"
+  inputs-digest = "c2ec735802afabb33152940ba82b11d781f01d92fb02975e2b022b74d629d1ea"
   solver-name = "gps-cdcl"
   solver-version = 1
