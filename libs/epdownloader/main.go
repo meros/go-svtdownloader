@@ -109,7 +109,7 @@ func Get(episode eplister.Episode, outDir string) error {
 	_, err = os.Stat(fullPath)
 	if !os.IsNotExist(err) {
 		log.Println("Not redownloading", fullPath)
-		return nil
+		return errors.New("Episode already downloaded")
 	}
 
 	log.Println("Downloading", fullPath)
