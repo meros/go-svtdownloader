@@ -101,8 +101,13 @@ func Get(episode eplister.Episode, outDir string) error {
 		return errors.New("Could not find suitable path to download")
 	}
 
-	folder := path.Join(outDir, "videos", episode.Series, episode.Season)
-	file := episode.Episode + ".mp4"
+	folder := path.Join(outDir, episode.Series)
+	file := episode.Series + " " + episode.Season + " " + episode.Episode + " " + ".mp4"
+
+	// IF file is on format Säsong X Avsnitt Y then change to SXEY for easier parsing
+	re = regexp.MustCompile(`(^.*)Säsong ([0-9]+) Avsnitt ([0-9]+)(.*)`)
+	file = re.ReplaceAllString(file, `$1 S$2E$3$3`)
+
 	fileTemp := episode.Episode + ".part.mp4"
 	fullPath := path.Join(folder, file)
 	fullPathTemp := path.Join(folder, fileTemp)
@@ -115,7 +120,7 @@ func Get(episode eplister.Episode, outDir string) error {
 
 	log.Println("Downloading", fullPath)
 
-	os.MkdirAll(folder, 0700)
+	os.MkdirAll(folder, 0777)
 	fmt.Println("ffmpeg",
 		"-i", videoURL,
 		"-c", "copy",
