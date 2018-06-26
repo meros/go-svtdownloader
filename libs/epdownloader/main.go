@@ -103,7 +103,7 @@ func Get(episode eplister.Episode, outDir string) error {
 	folder := path.Join(outDir, episode.Series)
 	fileBase := episode.Series + " " + episode.Season + " " + episode.Episode
 
-	// IF file is on format Säsong X Avsnitt Y then change to SXEY for easier parsing
+	// If file is on format Säsong X Avsnitt Y then change to SXEY for easier parsing
 	re = regexp.MustCompile(`(^.*)Säsong ([0-9]+) Avsnitt ([0-9]+)(.*$)`)
 	fileBase = re.ReplaceAllString(fileBase, `${1} S${2}E${3}${4}`)
 

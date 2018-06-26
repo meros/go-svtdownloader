@@ -3,6 +3,7 @@ package eplister
 import (
 	"log"
 	"net/url"
+	"regexp"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/meros/go-svtdownloader/libs/gqcommon"
@@ -36,7 +37,11 @@ func Get(series string) (episodes []Episode, err error) {
 		return
 	}
 
-	seariesTitle := doc.Find("[data-rt='title-page-title']").Text()
+	seriesTitle := doc.Find("[data-rt='title-page-title']").Text()
+
+	// Fix broken thunderbirds series title
+	re := regexp.MustCompile(`^Thunderbirds$`)
+	seriesTitle = re.ReplaceAllString(seriesTitle, `Thunderbirds Are Go`)
 
 	// Find the review items
 	var seasonHrefs []string
@@ -100,7 +105,7 @@ func Get(series string) (episodes []Episode, err error) {
 
 			episodeURL := baseURL.ResolveReference(url)
 			episodes = append(episodes, Episode{
-				seariesTitle,
+				seriesTitle,
 				seasonTitle,
 				episodeTitle,
 				*episodeURL})
