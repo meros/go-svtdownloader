@@ -52,7 +52,7 @@ func main() {
 			return
 		}
 
-		log.Println("Sleeping for an hour and checking again at that point")
-		time.Sleep(1 * time.Hour)
+		log.Println("Sleeping for 10 minutes and checking again at that point")
+		time.Sleep(10 * time.Minute)
 	}
 }
