@@ -118,14 +118,13 @@ func Get(episode eplister.Episode, outDir string) error {
 		return errors.New("Episode already downloaded")
 	}
 
-	log.Println("Downloading", fullPath)
-
-	_, err = os.Stat(fullPath)
+	_, err = os.Stat(fullPathTemp)
 	if !os.IsNotExist(err) {
 		log.Println("Deleting old temp", fullPathTemp)
 		os.Remove(fullPathTemp)
 	}
 
+	log.Println("Downloading", fullPath)
 	os.MkdirAll(folder, 0777)
 	err = exec.Command("ffmpeg",
 		"-i", videoURL,
