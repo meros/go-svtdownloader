@@ -102,13 +102,14 @@ func Get(episode eplister.Episode, outDir string) error {
 	}
 
 	folder := path.Join(outDir, episode.Series)
-	file := episode.Series + " " + episode.Season + " " + episode.Episode + " " + ".mp4"
+	fileBase := episode.Series + " " + episode.Season + " " + episode.Episode
 
 	// IF file is on format Säsong X Avsnitt Y then change to SXEY for easier parsing
-	re = regexp.MustCompile(`(^.*)Säsong ([0-9]+) Avsnitt ([0-9]+)(.*)`)
-	file = re.ReplaceAllString(file, `${1} S${2}E${3}${4}`)
+	re = regexp.MustCompile(`(^.*)Säsong ([0-9]+) Avsnitt ([0-9]+)(.*$)`)
+	fileBase = re.ReplaceAllString(fileBase, `${1} S${2}E${3}${4}`)
 
-	fileTemp := episode.Episode + ".part.mp4"
+	fileTemp := fileBase + ".part.mp4"
+	file := fileBase + ".mp4"
 	fullPath := path.Join(folder, file)
 	fullPathTemp := path.Join(folder, fileTemp)
 
