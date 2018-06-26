@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -39,7 +39,7 @@ type videoInfoContainer struct {
 }
 
 // Get will try to download video of provided episode
-func Get(episode eplister.Episode, outDir string) error {
+func Get(episode eplister.Episode, filename string) error {
 	doc, err := gqcommon.GetDoc(episode.Url)
 	if err != nil {
 		return err
@@ -101,21 +101,8 @@ func Get(episode eplister.Episode, outDir string) error {
 	}
 
 	// Fix broken thunderbirds series title
-	fixedSeries := episode.Series
-	re = regexp.MustCompile(`^Thunderbirds$`)
-	fixedSeries = re.ReplaceAllString(fixedSeries, `Thunderbirds Are Go`)
-
-	folder := path.Join(outDir, fixedSeries)
-	fileBase := fixedSeries + " " + episode.Season + " " + episode.Episode
-
-	// If file is on format Säsong X Avsnitt Y then change to SXEY for easier parsing
-	re = regexp.MustCompile(`(^.*)Säsong ([0-9]+) Avsnitt ([0-9]+)(.*$)`)
-	fileBase = re.ReplaceAllString(fileBase, `${1}S${2}E${3}${4}`)
-
-	fileTemp := fileBase + ".part.mp4"
-	file := fileBase + ".mp4"
-	fullPath := path.Join(folder, file)
-	fullPathTemp := path.Join(folder, fileTemp)
+	fullPathTemp := filename + ".part.mp4"
+	fullPath := filename + ".mp4"
 
 	_, err = os.Stat(fullPath)
 	if !os.IsNotExist(err) {
@@ -130,7 +117,7 @@ func Get(episode eplister.Episode, outDir string) error {
 	}
 
 	log.Println("Downloading", fullPath)
-	os.MkdirAll(folder, 0777)
+	os.MkdirAll(filepath.Dir(fullPath), 0777)
 	err = exec.Command("ffmpeg",
 		"-i", videoURL,
 		"-c", "copy",

@@ -2,11 +2,13 @@ package main
 
 import (
 	"log"
+	"regexp"
 	"time"
 
 	"github.com/alecthomas/kingpin"
 	"github.com/meros/go-svtdownloader/libs/epdownloader"
 	"github.com/meros/go-svtdownloader/libs/eplister"
+	"github.com/meros/go-svtdownloader/libs/epnamer"
 	pushbullet "github.com/xconstruct/go-pushbullet"
 )
 
@@ -24,12 +26,27 @@ func main() {
 		pb = pushbullet.New(*pushbulletToken)
 	}
 
+	epnamerOptions := epnamer.Options{
+		Series: &epnamer.Replacement{
+			*regexp.MustCompile("^Thunderbirds$"),
+			"Thunderbirds Are Go"},
+		Season: &epnamer.Replacement{
+			*regexp.MustCompile("^Säsong ([0-9]+)$"),
+			"S$1"},
+		Episode: &epnamer.Replacement{
+			*regexp.MustCompile("^Avsnitt ([0-9]+)$"),
+			"E$1"},
+		TemplateString: "/media/data/Series/{{.Series}}/{{.Series}} {{.Season}}{{.Episode}}"}
+
 	for {
 		for _, serie := range *series {
 			log.Println("Fetching series", serie)
 			eps, _ := eplister.Get(serie)
+
 			for _, ep := range eps {
-				err := epdownloader.Get(ep, *outDir)
+				filename, _ := epnamer.Filename(ep, epnamerOptions)
+
+				err := epdownloader.Get(ep, filename)
 				if err != nil {
 					log.Println(err)
 					continue
