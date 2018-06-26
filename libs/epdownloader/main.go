@@ -106,7 +106,7 @@ func Get(episode eplister.Episode, outDir string) error {
 
 	// IF file is on format Säsong X Avsnitt Y then change to SXEY for easier parsing
 	re = regexp.MustCompile(`(^.*)Säsong ([0-9]+) Avsnitt ([0-9]+)(.*)`)
-	file = re.ReplaceAllString(file, `$1 S$2E$3$3`)
+	file = re.ReplaceAllString(file, `${1} S${2}E${3}${4}`)
 
 	fileTemp := episode.Episode + ".part.mp4"
 	fullPath := path.Join(folder, file)
