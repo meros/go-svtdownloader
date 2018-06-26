@@ -14,7 +14,6 @@ import (
 
 func main() {
 	series := kingpin.Flag("series", "Name of series").Short('s').Required().Strings()
-	outDir := kingpin.Flag("outDir", "Base directory to put files").Short('o').Required().String()
 	pushbulletToken := kingpin.Flag("pushbulletToken", "Pushbullet token for notifications").Short('p').String()
 	pushbulletDevice := kingpin.Flag("pushbulletDevice", "Pushbullet device for notifications").Short('d').String()
 	forever := kingpin.Flag("forever", "Keep running forever").Short('f').Bool()
