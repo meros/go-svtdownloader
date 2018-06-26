@@ -100,12 +100,17 @@ func Get(episode eplister.Episode, outDir string) error {
 		return errors.New("Could not find suitable path to download")
 	}
 
-	folder := path.Join(outDir, episode.Series)
-	fileBase := episode.Series + " " + episode.Season + " " + episode.Episode
+	// Fix broken thunderbirds series title
+	fixedSeries := episode.Series
+	re = regexp.MustCompile(`^Thunderbirds$`)
+	fixedSeries = re.ReplaceAllString(fixedSeries, `Thunderbirds Are Go`)
+
+	folder := path.Join(outDir, fixedSeries)
+	fileBase := fixedSeries + " " + episode.Season + " " + episode.Episode
 
 	// If file is on format Säsong X Avsnitt Y then change to SXEY for easier parsing
 	re = regexp.MustCompile(`(^.*)Säsong ([0-9]+) Avsnitt ([0-9]+)(.*$)`)
-	fileBase = re.ReplaceAllString(fileBase, `${1} S${2}E${3}${4}`)
+	fileBase = re.ReplaceAllString(fileBase, `${1}S${2}E${3}${4}`)
 
 	fileTemp := fileBase + ".part.mp4"
 	file := fileBase + ".mp4"
