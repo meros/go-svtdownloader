@@ -3,7 +3,6 @@ package epdownloader
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -121,12 +120,13 @@ func Get(episode eplister.Episode, outDir string) error {
 
 	log.Println("Downloading", fullPath)
 
+	_, err = os.Stat(fullPath)
+	if !os.IsNotExist(err) {
+		log.Println("Deleting old temp", fullPathTemp)
+		os.Remove(fullPathTemp)
+	}
+
 	os.MkdirAll(folder, 0777)
-	fmt.Println("ffmpeg",
-		"-i", videoURL,
-		"-c", "copy",
-		"-bsf:a", "aac_adtstoasc",
-		fullPathTemp)
 	err = exec.Command("ffmpeg",
 		"-i", videoURL,
 		"-c", "copy",
