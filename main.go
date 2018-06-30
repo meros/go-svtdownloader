@@ -60,10 +60,7 @@ func main() {
 				filename, _ := epnamer.Filename(ep, epnamerOptions)
 				filename = path.Join(mainConfig.BaseFolder, filename)
 
-				err := epdownloader.Get(ep, filename)
-				if err != nil {
-					log.Fatal("Failed to download file", err)
-				}
+				epdownloader.Get(ep, filename)
 
 				if pb != nil {
 					dev, err := pb.Device(mainConfig.PushbulletDevice)
