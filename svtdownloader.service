@@ -1,0 +1,9 @@
+[Unit]
+Description="SVT Downloader"
+
+[Service]
+Type=simple
+ExecStart=/home/meros/bin/svtdownloader.sh
+
+[Install]
+WantedBy=multi-user.target

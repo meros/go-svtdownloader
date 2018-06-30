@@ -2,10 +2,13 @@ package main
 
 import (
 	"log"
+	"os"
+	"path"
 	"regexp"
 	"time"
 
 	"github.com/alecthomas/kingpin"
+	"github.com/meros/go-svtdownloader/libs/confreader"
 	"github.com/meros/go-svtdownloader/libs/epdownloader"
 	"github.com/meros/go-svtdownloader/libs/eplister"
 	"github.com/meros/go-svtdownloader/libs/epnamer"
@@ -13,52 +16,63 @@ import (
 )
 
 func main() {
-	series := kingpin.Flag("series", "Name of series").Short('s').Required().Strings()
-	pushbulletToken := kingpin.Flag("pushbulletToken", "Pushbullet token for notifications").Short('p').String()
-	pushbulletDevice := kingpin.Flag("pushbulletDevice", "Pushbullet device for notifications").Short('d').String()
+	config := kingpin.Flag("config", "Config file").Short('c').Required().String()
 	forever := kingpin.Flag("forever", "Keep running forever").Short('f').Bool()
 
 	kingpin.Parse()
 
-	var pb *pushbullet.Client
-	if *pushbulletToken != "" {
-		pb = pushbullet.New(*pushbulletToken)
+	file, err := os.Open(*config)
+	if err != nil {
+		log.Fatal("Failed to open config file: ", err)
 	}
 
-	epnamerOptions := epnamer.Options{
-		Series: &epnamer.Replacement{
-			*regexp.MustCompile("^Thunderbirds$"),
-			"Thunderbirds Are Go"},
-		Season: &epnamer.Replacement{
-			*regexp.MustCompile("^Säsong ([0-9]+)$"),
-			"S$1"},
-		Episode: &epnamer.Replacement{
-			*regexp.MustCompile("^Avsnitt ([0-9]+)$"),
-			"E$1"},
-		TemplateString: "/media/data/Series/{{.Series}}/{{.Series}} {{.Season}}{{.Episode}}"}
+	mainConfig, err := confreader.Parse(file)
+	if err != nil {
+		log.Fatal("Failed to parse config file: ", err)
+	}
+
+	var pb *pushbullet.Client
+	if mainConfig.PushbulletToken != "" {
+		pb = pushbullet.New(mainConfig.PushbulletToken)
+	}
 
 	for {
-		for _, serie := range *series {
-			log.Println("Fetching series", serie)
-			eps, _ := eplister.Get(serie)
+		for _, serie := range mainConfig.Series {
+			log.Println("Fetching series", serie.Key)
+			eps, err := eplister.Get(serie.Key)
+			if err != nil {
+				log.Fatal("Failed to fetch serie", err)
+			}
+
+			epnamerOptions := epnamer.Options{
+				Series: &epnamer.Replacement{
+					Re:          *regexp.MustCompile(serie.Series.Regex),
+					Replacement: serie.Series.Replacement},
+				Season: &epnamer.Replacement{
+					Re:          *regexp.MustCompile(serie.Season.Regex),
+					Replacement: serie.Season.Replacement},
+				Episode: &epnamer.Replacement{
+					Re:          *regexp.MustCompile(serie.Episode.Regex),
+					Replacement: serie.Episode.Replacement},
+				TemplateString: serie.FilenameTemplate}
 
 			for _, ep := range eps {
 				filename, _ := epnamer.Filename(ep, epnamerOptions)
+				filename = path.Join(mainConfig.BaseFolder, filename)
 
 				err := epdownloader.Get(ep, filename)
 				if err != nil {
-					log.Println(err)
-					continue
+					log.Fatal("Failed to download file", err)
 				}
 
 				if pb != nil {
-					dev, err := pb.Device(*pushbulletDevice)
+					dev, err := pb.Device(mainConfig.PushbulletDevice)
 					if err == nil {
-						err = dev.PushNote("Episode downloaded", ep.Series+" "+ep.Season+" "+ep.Series+" has been downloaded")
+						err = dev.PushNote("Episode downloaded", ep.Series+" "+ep.Season+" "+ep.Episode+" has been downloaded")
 					}
 
 					if err != nil {
-						log.Println("Failed to push notification to device", *pushbulletDevice, err)
+						log.Println("Failed to push notification to device", err)
 					}
 				}
 			}
@@ -70,5 +84,6 @@ func main() {
 
 		log.Println("Sleeping for 10 minutes and checking again at that point")
 		time.Sleep(10 * time.Minute)
+
 	}
 }
