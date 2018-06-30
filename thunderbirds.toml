@@ -1,4 +1,6 @@
 basefolder = "/tmp"
+pushbullettoken = ""
+pushbulletdevice = ""
 
 [[series]]
     key = "thunderbirds"

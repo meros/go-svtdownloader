@@ -36,6 +36,17 @@ func main() {
 		pb = pushbullet.New(mainConfig.PushbulletToken)
 	}
 
+	if pb != nil {
+		dev, err := pb.Device(mainConfig.PushbulletDevice)
+		if err == nil {
+			err = dev.PushNote("Starting up go-svtdownloader", "")
+		}
+
+		if err != nil {
+			log.Println("Failed to push notification to device", err)
+		}
+	}
+
 	for {
 		for _, serie := range mainConfig.Series {
 			log.Println("Fetching series", serie.Key)
