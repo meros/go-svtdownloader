@@ -71,9 +71,8 @@ func main() {
 				filename, _ := epnamer.Filename(ep, epnamerOptions)
 				filename = path.Join(mainConfig.BaseFolder, filename)
 
-				epdownloader.Get(ep, filename)
-
-				if pb != nil {
+				err := epdownloader.Get(ep, filename)
+				if err == nil && pb != nil {
 					dev, err := pb.Device(mainConfig.PushbulletDevice)
 					if err == nil {
 						err = dev.PushNote("Episode downloaded", ep.Series+" "+ep.Season+" "+ep.Episode+" has been downloaded")
