@@ -1,19 +1,11 @@
 basefolder = "/tmp"
-pushbullettoken = ""
-pushbulletdevice = ""
 
 [[series]]
     key = "thunderbirds"
     filenametemplate = "{{.Series}}/{{.Series}} {{.Season}}{{.Episode}}"
-
-    [series.series]
-        regex = ".*"
-        replacement = "Thunderbirds Are Go"
-    
-    [series.season]
-        regex = "^Säsong ([0-9]+)$"
-        replacement = "S$1"
-
-    [series.episode]
-        regex = "^Avsnitt ([0-9]+)$"
-        replacement = "E$1"
+    seriesregexp = ".*"
+    seriesreplacement = "Thunderbirds Are Go"
+    seasonregexp = "^Säsong ([0-9]+)$"
+    seasonreplacement = "S$1"
+    episoderegexp = "^Avsnitt ([0-9]+)$"
+    episodereplacement = "E$1"

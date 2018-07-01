@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"regexp"
 	"time"
 
 	"github.com/alecthomas/kingpin"
@@ -12,7 +11,6 @@ import (
 	"github.com/meros/go-svtdownloader/libs/epdownloader"
 	"github.com/meros/go-svtdownloader/libs/eplister"
 	"github.com/meros/go-svtdownloader/libs/epnamer"
-	pushbullet "github.com/xconstruct/go-pushbullet"
 )
 
 func main() {
@@ -31,21 +29,7 @@ func main() {
 		log.Fatal("Failed to parse config file: ", err)
 	}
 
-	var pb *pushbullet.Client
-	if mainConfig.PushbulletToken != "" {
-		pb = pushbullet.New(mainConfig.PushbulletToken)
-	}
-
-	if pb != nil {
-		dev, err := pb.Device(mainConfig.PushbulletDevice)
-		if err == nil {
-			err = dev.PushNote("Starting up go-svtdownloader", "")
-		}
-
-		if err != nil {
-			log.Println("Failed to push notification to device", err)
-		}
-	}
+	mainConfig.Notifier.Notify("Starting up server", "")
 
 	for {
 		for _, serie := range mainConfig.Series {
@@ -57,30 +41,23 @@ func main() {
 
 			epnamerOptions := epnamer.Options{
 				Series: &epnamer.Replacement{
-					Re:          *regexp.MustCompile(serie.Series.Regex),
-					Replacement: serie.Series.Replacement},
+					Re:          serie.SeriesRegexp,
+					Replacement: serie.SeriesReplacement},
 				Season: &epnamer.Replacement{
-					Re:          *regexp.MustCompile(serie.Season.Regex),
-					Replacement: serie.Season.Replacement},
+					Re:          serie.SeasonRegexp,
+					Replacement: serie.SeasonReplacement},
 				Episode: &epnamer.Replacement{
-					Re:          *regexp.MustCompile(serie.Episode.Regex),
-					Replacement: serie.Episode.Replacement},
-				TemplateString: serie.FilenameTemplate}
+					Re:          serie.EpisodeRegexp,
+					Replacement: serie.EpisodeReplacement},
+				Template: serie.FilenameTemplate}
 
 			for _, ep := range eps {
 				filename, _ := epnamer.Filename(ep, epnamerOptions)
 				filename = path.Join(mainConfig.BaseFolder, filename)
 
 				err := epdownloader.Get(ep, filename)
-				if err == nil && pb != nil {
-					dev, err := pb.Device(mainConfig.PushbulletDevice)
-					if err == nil {
-						err = dev.PushNote("Episode downloaded", ep.Series+" "+ep.Season+" "+ep.Episode+" has been downloaded")
-					}
-
-					if err != nil {
-						log.Println("Failed to push notification to device", err)
-					}
+				if err == nil {
+					mainConfig.Notifier.Notify("Episode downloaded", ep.Series+" "+ep.Season+" "+ep.Episode+" has been downloaded")
 				}
 			}
 		}

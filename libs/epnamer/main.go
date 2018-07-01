@@ -9,7 +9,7 @@ import (
 )
 
 type Replacement struct {
-	Re          regexp.Regexp
+	Re          *regexp.Regexp
 	Replacement string
 }
 
@@ -23,7 +23,7 @@ type Options struct {
 	Episode *Replacement
 	// Template is the file output template
 	// An example would be "{{.Series}}/{{.Series}} - {{.Season}}{{.Episode}}"
-	TemplateString string
+	Template *template.Template
 }
 
 // Filename translate an episode to a filename
@@ -43,12 +43,8 @@ func Filename(ep eplister.Episode, options Options) (filename string, err error)
 		episode = options.Episode.Re.ReplaceAllString(episode, options.Episode.Replacement)
 	}
 
-	tmplt, err := template.New("outname").Parse(options.TemplateString)
-	if err != nil {
-		return "", err
-	}
 	outfilename := bytes.NewBufferString("")
-	err = tmplt.Execute(outfilename, &struct {
+	err = options.Template.Execute(outfilename, &struct {
 		Series  string
 		Season  string
 		Episode string
