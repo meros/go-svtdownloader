@@ -1,6 +1,7 @@
 package confreader
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -18,10 +19,6 @@ func TestParseOk(t *testing.T) {
 	textFile := `
 	basefolder = "/media/data/Series/"
 
-	[pushbullet]
-	token = "dummytoken"
-	device = "dummydevice"
-
 	[[series]]
 	key = "thunderbirds"
 	filenametemplate = "dummyfilenametemplate"
@@ -35,9 +32,27 @@ func TestParseOk(t *testing.T) {
 	episoderegexp = "^Avsnitt ([0-9]+)$"
 	episodereplacement = "E$1"
 `
-	_, err := Parse(strings.NewReader(textFile))
+	config, err := Parse(strings.NewReader(textFile))
 	if err != nil {
 		t.Error("Did not expect error", err)
+		return
+	}
+
+	fmt.Println(config)
+
+	if len(config.Series) != 1 {
+		t.Error("Did not expect empty series")
+		return
+	}
+
+	if strings.Compare(config.Series[0].SeasonTransformer.Transform("Säsong 42"), "S42") != 0 {
+		t.Error("SeasonTransformer did not produce expected output")
+		return
+	}
+
+	if strings.Compare(config.Series[0].EpisodeTransformer.Transform("Avsnitt 42"), "E42") != 0 {
+		t.Error("SeasonTransformer did not produce expected output")
+		return
 	}
 }
 

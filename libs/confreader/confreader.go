@@ -32,8 +32,14 @@ type tomlMain struct {
 	Series     []tomlSerie
 }
 
+// Notifier is an interface used to send notifications to the user
 type Notifier interface {
 	Notify(title string, body string)
+}
+
+// Transformer is an interface used to transform a string into another string
+type Transformer interface {
+	Transform(text string) string
 }
 
 // ConfigSeries represents a series to download
@@ -43,14 +49,12 @@ type ConfigSeries struct {
 	// FilenameTemplate is a template that generates a file name
 	// Should be fed a struct with keys Series, Season, Episode
 	FilenameTemplate   *template.Template
-	SeriesRegexp       *regexp.Regexp
-	SeriesReplacement  string
-	SeasonRegexp       *regexp.Regexp
-	SeasonReplacement  string
-	EpisodeRegexp      *regexp.Regexp
-	EpisodeReplacement string
+	SeriesTransformer  Transformer
+	SeasonTransformer  Transformer
+	EpisodeTransformer Transformer
 }
 
+// ConfigMain is the full collection of configuration for the svtdownloader
 type ConfigMain struct {
 	BaseFolder string
 	Notifier   Notifier
@@ -68,6 +72,15 @@ func (pbn *pushBulletNotifier) Notify(title string, body string) {
 type emptyNotifier struct{}
 
 func (en *emptyNotifier) Notify(title string, body string) {}
+
+type regexpTransformer struct {
+	re *regexp.Regexp
+	rs string
+}
+
+func (ret *regexpTransformer) Transform(text string) string {
+	return ret.re.ReplaceAllString(text, ret.rs)
+}
 
 // Parse will read, parse and validate config supplied in reader
 func Parse(r io.Reader) (configMain *ConfigMain, err error) {
@@ -130,11 +143,14 @@ func Parse(r io.Reader) (configMain *ConfigMain, err error) {
 				return nil, err
 			}
 
-			configSeries.SeriesRegexp = re
+			configSeries.SeriesTransformer = &regexpTransformer{
+				re,
+				tomlSerie.SeriesReplacement}
 		} else {
-			configSeries.SeriesRegexp = regexp.MustCompile(".*")
+			configSeries.SeriesTransformer = &regexpTransformer{
+				regexp.MustCompile(".*"),
+				tomlSerie.SeriesReplacement}
 		}
-		configSeries.SeriesReplacement = tomlSerie.SeriesReplacement
 
 		if tomlSerie.SeasonRegexp != "" {
 			re, err := regexp.Compile(tomlSerie.SeasonRegexp)
@@ -142,11 +158,14 @@ func Parse(r io.Reader) (configMain *ConfigMain, err error) {
 				return nil, err
 			}
 
-			configSeries.SeasonRegexp = re
+			configSeries.SeasonTransformer = &regexpTransformer{
+				re,
+				tomlSerie.SeasonReplacement}
 		} else {
-			configSeries.SeasonRegexp = regexp.MustCompile(".*")
+			configSeries.SeasonTransformer = &regexpTransformer{
+				regexp.MustCompile(".*"),
+				tomlSerie.SeasonReplacement}
 		}
-		configSeries.SeasonReplacement = tomlSerie.SeasonReplacement
 
 		if tomlSerie.EpisodeRegexp != "" {
 			re, err := regexp.Compile(tomlSerie.EpisodeRegexp)
@@ -154,14 +173,17 @@ func Parse(r io.Reader) (configMain *ConfigMain, err error) {
 				return nil, err
 			}
 
-			configSeries.EpisodeRegexp = re
+			configSeries.EpisodeTransformer = &regexpTransformer{
+				re,
+				tomlSerie.EpisodeReplacement}
 		} else {
-			configSeries.EpisodeRegexp = regexp.MustCompile(".*")
+			configSeries.EpisodeTransformer = &regexpTransformer{
+				regexp.MustCompile(".*"),
+				tomlSerie.EpisodeReplacement}
 		}
-		configSeries.EpisodeReplacement = tomlSerie.EpisodeReplacement
 
 		configMain.Series = append(configMain.Series, configSeries)
 	}
 
-	return
+	return configMain, nil
 }

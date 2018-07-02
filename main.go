@@ -40,15 +40,9 @@ func main() {
 			}
 
 			epnamerOptions := epnamer.Options{
-				Series: &epnamer.Replacement{
-					Re:          serie.SeriesRegexp,
-					Replacement: serie.SeriesReplacement},
-				Season: &epnamer.Replacement{
-					Re:          serie.SeasonRegexp,
-					Replacement: serie.SeasonReplacement},
-				Episode: &epnamer.Replacement{
-					Re:          serie.EpisodeRegexp,
-					Replacement: serie.EpisodeReplacement},
+				Series:   serie.SeriesTransformer,
+				Season:   serie.SeasonTransformer,
+				Episode:  serie.EpisodeTransformer,
 				Template: serie.FilenameTemplate}
 
 			for _, ep := range eps {
