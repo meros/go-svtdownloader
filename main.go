@@ -36,7 +36,8 @@ func main() {
 			log.Println("Fetching series", serie.Key)
 			eps, err := eplister.Get(serie.Key)
 			if err != nil {
-				log.Fatal("Failed to fetch serie", err)
+				log.Println("Failed to fetch serie", err)
+				continue
 			}
 
 			epnamerOptions := epnamer.Options{
