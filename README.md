@@ -5,11 +5,11 @@ Make sure you follow any licenses that regulate how you can use the streams that
 
 To install:
 ```bash
-go get github.com/meros/go-svtdownloader
+go get github.com/meros/go-svtdownloader/cmd/svtdownloader
 ```
 
 ```bash
-usage: go-svtdownloader --series=SERIES --outDir=OUTDIR [<flags>]
+usage: svtdownloader --series=SERIES --outDir=OUTDIR [<flags>]
 
 Flags:
       --help           Show context-sensitive help (also try --help-long and --help-man).
